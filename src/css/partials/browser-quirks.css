@@ -1,0 +1,7 @@
+/**
+ * Fixes font rendering in Firefox
+ */
+ html {
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 600;
+}
