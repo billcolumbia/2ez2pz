@@ -7,18 +7,12 @@ const chokidar = require('chokidar')
 const postcss = require('postcss')
 const devPlugins = [
   require('postcss-import'),
+  require('postcss-nested'),
+  require('postcss-custom-media'),
+  require('postcss-custom-properties'),
   require('tailwindcss')({ config: require('../tailwind') })
 ]
-const prodPlugins = [
-  ...devPlugins,
-  require('autoprefixer'),
-  require('postcss-preset-env')({
-    stage: 1,
-    browsers: ['chrome 58', 'firefox 57', 'safari 11', 'edge 16'],
-    preserve: false
-  }),
-  require('cssnano')
-]
+const prodPlugins = [...devPlugins, require('autoprefixer'), require('cssnano')]
 const plugins = isDev ? devPlugins : prodPlugins
 
 class CSSTask {

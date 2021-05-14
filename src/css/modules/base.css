@@ -1,1 +1,27 @@
 @import "../partials/browser-quirks.css";
+
+.one {
+  color: green;
+
+  &:hover {
+    color: red;
+    appearance: none;
+  }
+
+  &_two {
+    color: green;
+  }
+}
+
+:root {
+  --width-one: 400px;
+}
+
+@custom-media --width-one (max-width: 30em);
+
+@media (--width-one) {
+  body {
+    color: red;
+    width: var(--width-one);
+  }
+}
