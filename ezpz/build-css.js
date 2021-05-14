@@ -21,23 +21,29 @@ const prodPlugins = [
 ]
 const plugins = isDev ? devPlugins : prodPlugins
 
-class Builder {
+class CSSTask {
   /**
+   * @description
+   * Flattened array of all modules' filepaths
    * @type {Array<String>}
    */
   modules = null
 
   constructor() {
-    this.modules = this.findModules()
+    this.modules = paths.css.modules.map((pattern) => globby.sync(pattern)).flat()
   }
 
   /**
    * @description
+   * Process a given file through PostCSS and its plugins.
+   * Outputs file to dist location set in config.
+   * @summary
+   * Utilizes timer functions from logger.
+   * We need to extract the filename without the path so it can be
+   * added to the dist path for PostCSS output ('to' option).
+   * Source maps are inline in dev, separate files for prod.
+   * @param {String} file filename with path
    */
-  findModules = () => {
-    return paths.css.modules.map((pattern) => globby.sync(pattern)).flat()
-  }
-
   processFile = async (file) => {
     const start = Date.now()
     const fileName = file.match(/(\w|\d|\-)+(?=\.css)/)[0]
@@ -58,6 +64,7 @@ class Builder {
   }
 
   /**
+   * @description
    * Process a single module, requires module filePath and event name
    * @param {String} event event name (add, change, etc from chokidar)
    * @param {String} filePath file name and path that triggered the event
@@ -69,29 +76,37 @@ class Builder {
   }
 
   /**
+   * @description
    * Find the parent module that references the given partial
    * and process it. Requires the module filePath and event name
+   * @summary
+   * Extract just filename from filePath as import statements likely
+   * won't have a full path. We need to iterate over all top level
+   * modules, looking for that extracted filename. When the import
+   * statement is matched, reprocess that parent module.
    * @param {String} event event name (add, change, etc from chokidar)
    * @param {String} filePath file name and path that triggered the event
    */
-  processParent = (event, filePath) => {
-    /**
-     * strip path away, so we can match relative paths in parent modules
-     */
+  processParent = async (event, filePath) => {
     const partial = filePath.match(/(\w|\d|\-)+\.css/)[0]
     fileEvent(event, filePath, 'Partial Changed: Rebuilding Parent Module')
-    this.modules.forEach((file) => {
-      // read current file and if it references the partial, process it
-      fs.readFile(file).then((contents, err) => {
-        if (err) console.log(err)
+    this.modules.forEach(async (file) => {
+      try {
+        const contents = await fs.readFile(file)
         if (contents.includes(partial)) this.processFile(file)
-      })
+      } catch (err) {
+        console.log(err)
+      }
     })
   }
 
+  /**
+   * @description
+   * Process all modules.
+   */
   processAll = async () => {
     fileEvent('boot', 'All CSS', 'Build System started')
-    await Promise.all(
+    return await Promise.all(
       this.modules.map(async (file) => {
         return await this.processFile(file)
       })
@@ -99,37 +114,44 @@ class Builder {
   }
 
   /**
-   * Use chokidar for our watcher to re-run our batch ONLY when
-   * an add or change event occurs.
+   * @description
+   * Start chokidar watcher to reprocess files. Files to watch
+   * are set in config.
+   * @summary
+   * We only need to work with add and change events, ignore all others.
+   *
+   * When a file changes that is not CSS, it's probably a template. In that
+   * case we will want to reprocess the utility.css to trigger tailwindcss
+   * JIT re-evaluation.
+   *
+   * When the event is add/change AND it's a CSS file, we process it based
+   * it's path. Modules get processed individually and partials trigger
+   * parent modules to be processed.
    */
   watch = () => {
     chokidar
       .watch(paths.css.watch, { ignoreInitial: true })
       .on('all', (event, filePath) => {
         if (event !== 'add' && event !== 'change') return
-        /**
-         * Tailwind JIT is fun! When you update your templates though, we need to
-         * rebuild our CSS so the JIT can re-evaluate the template files and add
-         * the newly used classes to the CSS!
-         */
         if (!filePath.includes('.css')) {
           fileEvent('change', filePath, 'Tailwind JIT re-evaulation')
           this.processModule('Rebuilding Utility Module', 'src/css/modules/utility.css')
           return
         }
-        /**
-         * Normal CSS source files changed, re-process accordingly
-         */
         if (filePath.includes('modules')) this.processModule(event, filePath)
         if (filePath.includes('partials')) this.processParent(event, filePath)
       })
   }
 
-  run = () => {
-    this.processAll()
+  /**
+   * @description
+   * Process all modules and if in dev mode, start the watcher.
+   */
+  run = async () => {
+    await this.processAll()
     if (isDev) this.watch()
   }
 }
 
-const instance = new Builder()
+const instance = new CSSTask()
 instance.run()

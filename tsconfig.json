@@ -3,7 +3,7 @@
     "importsNotUsedAsValues": "error",
     "isolatedModules": true,
     "sourceMap": true,
-    "types": ["svelte"],
+    "types": ["svelte", "node"],
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "target": "esnext",

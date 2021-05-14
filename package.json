@@ -5,12 +5,16 @@
   "main": "index.js",
   "scripts": {
     "css:build": "node ./ezpz/build-css.js",
-    "dev": "NODE_ENV=development npm-run-all --parallel css:build"
+    "js:build": "node ./ezpz/build-js.js",
+    "sizecheck": "node ./ezpz/size-check.js",
+    "manifest": "node ./ezpz/create-manifest.js",
+    "dev": "NODE_ENV=development npm-run-all --parallel js:build css:build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^15.0.3",
     "autoprefixer": "^10.2.5",
     "chalk": "^4.1.1",
     "chokidar": "^3.5.1",
