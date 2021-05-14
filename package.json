@@ -8,7 +8,8 @@
     "js:build": "node ./ezpz/build-js.js",
     "sizecheck": "node ./ezpz/size-check.js",
     "manifest": "node ./ezpz/create-manifest.js",
-    "dev": "NODE_ENV=development npm-run-all --parallel js:build css:build"
+    "dev": "NODE_ENV=development npm-run-all --parallel js:build css:build",
+    "build": "NODE_ENV=production run-s js:build css:build manifest sizecheck"
   },
   "keywords": [],
   "author": "",
