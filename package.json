@@ -8,7 +8,8 @@
     "js:build": "node ./ezpz/build-js.js",
     "sizecheck": "node ./ezpz/size-check.js",
     "manifest": "node ./ezpz/create-manifest.js",
-    "dev": "NODE_ENV=development npm-run-all --parallel js:build css:build",
+    "anubis": "anubis -f './static/dist/**/*.{js,css}' -f './static/**/*.{html,twig}' -t 'http://localhost:8080'",
+    "dev": "NODE_ENV=development npm-run-all --parallel js:build css:build anubis",
     "build": "NODE_ENV=production run-s js:build css:build manifest sizecheck"
   },
   "keywords": [],
@@ -16,6 +17,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^15.0.3",
+    "anubis": "github:billcolumbia/anubis#semver:^0.9",
     "autoprefixer": "^10.2.5",
     "chalk": "^4.1.1",
     "chokidar": "^3.5.1",
