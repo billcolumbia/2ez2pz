@@ -1,4 +1,4 @@
-module.exports = {
+const Config = {
   jsOptions: {
     /**
      * @type {Boolean}
@@ -57,3 +57,5 @@ module.exports = {
     ]
   }
 }
+
+module.exports = Config

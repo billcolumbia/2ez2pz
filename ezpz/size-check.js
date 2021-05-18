@@ -4,7 +4,7 @@ const globby = require('globby')
 const c = require('chalk')
 const log = console.log
 const { gzipSync } = require('zlib')
-const { sizeCheck } = require('./config')
+const config = require('./config')
 
 /*
  *--------------------------------------------------------------------------
@@ -119,4 +119,4 @@ const SizeCheck = async (ruleList) => {
     .forEach((file) => logFileStats(file))
 }
 
-SizeCheck(sizeCheck.options)
+SizeCheck(config.sizeCheck.options)

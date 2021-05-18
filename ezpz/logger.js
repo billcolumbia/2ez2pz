@@ -7,7 +7,7 @@ const { log } = console
  */
 const getTime = () => new Date().toLocaleTimeString().replace(/\s*(AM|PM)/, '')
 
-module.exports = {
+const Logger = {
   /**
    * @description
    * Logs a colorful message to console along with timestamp, event, and filepath
@@ -44,3 +44,5 @@ module.exports = {
     )
   }
 }
+
+module.exports = Logger

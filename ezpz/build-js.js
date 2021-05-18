@@ -129,5 +129,4 @@ class JSTask {
   }
 }
 
-const instance = new JSTask()
-instance.run()
+new JSTask().run()

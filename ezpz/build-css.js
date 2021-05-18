@@ -153,5 +153,4 @@ class CSSTask {
   }
 }
 
-const instance = new CSSTask()
-instance.run()
+new CSSTask().run()
