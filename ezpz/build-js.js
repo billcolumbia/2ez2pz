@@ -72,9 +72,9 @@ class JSTask {
    * @param {String} filePath file name and path that triggered the event
    */
   processParent = async (event, filePath) => {
-    const match = filePath.match(/(\w|\d|\-)+\.js/)[0]
+    const match = filePath.match(/(\w|\d|\-)+\.(js|svelte)/)[0]
     // remove file extension from match
-    const partialName = match.replace('.js', '')
+    const partialName = match.replace('.js', '').replace('.svelte', '')
     let modulesQueue = []
     fileEvent(event, filePath, 'Partial Changed: Rebuilding Parent Module')
     await Promise.all(
