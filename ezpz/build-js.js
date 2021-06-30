@@ -49,59 +49,6 @@ class JSTask {
 
   /**
    * @description
-   * Process a single module, requires module filePath and event name
-   * @param {String} event event name (add, change, etc from chokidar)
-   * @param {String} filePath file name and path that triggered the event
-   */
-  processModule = (event, filePath) => {
-    fileEvent(event, filePath, 'Module Changed: Rebuilding')
-    const file = this.modules.find((file) => file === filePath)
-    this.processFiles([file])
-  }
-
-  /**
-   * @description
-   * Find the parent module that references the given partial
-   * and process it. Requires the module filePath and event name
-   * @summary
-   * Extract just filename from filePath as import statements likely
-   * won't have a full path. We need to iterate over all top level
-   * modules, looking for that extracted filename. When the import
-   * statement is matched, reprocess that parent module.
-   * @param {String} event event name (add, change, etc from chokidar)
-   * @param {String} filePath file name and path that triggered the event
-   */
-  processParent = async (event, filePath) => {
-    const match = filePath.match(/(\w|\d|\-)+\.(js|svelte)/)[0]
-    // remove file extension from match
-    const partialName = match.replace('.js', '').replace('.svelte', '')
-    let modulesQueue = []
-    fileEvent(event, filePath, 'Partial Changed: Rebuilding Parent Module')
-    await Promise.all(
-      this.modules.map(async (file) => {
-        try {
-          const contents = await fs.readFile(file)
-          const importRegex = new RegExp(`import.*'${partialName}'`)
-          if (importRegex.test(contents)) modulesQueue.push(file)
-        } catch (err) {
-          console.log(err)
-        }
-      })
-    )
-    this.processFiles(modulesQueue)
-  }
-
-  /**
-   * @description
-   * Process all modules.
-   */
-  processAll = async () => {
-    fileEvent('boot', 'All JavaScript', 'Build System started')
-    return await this.processFiles(this.modules)
-  }
-
-  /**
-   * @description
    * Start chokidar watcher to reprocess files. Files to watch
    * are set in config.
    * @summary
@@ -114,8 +61,8 @@ class JSTask {
       .watch(paths.js.watch, { ignoreInitial: true })
       .on('all', (event, filePath) => {
         if (event !== 'add' && event !== 'change') return
-        if (filePath.includes('modules')) this.processModule(event, filePath)
-        else this.processParent(event, filePath)
+        fileEvent(event, filePath, 'Module Changed: Rebuilding')
+        this.processFiles(this.modules)
       })
   }
 
@@ -124,7 +71,7 @@ class JSTask {
    * Process all modules and if in dev mode, start the watcher.
    */
   run = async () => {
-    await this.processAll()
+    await this.processFiles(this.modules)
     if (isDev) this.watch()
   }
 }
