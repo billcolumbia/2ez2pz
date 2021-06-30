@@ -1,6 +1,6 @@
 const isDev = process.env.NODE_ENV === 'development'
 const { fileEvent, fileInfo, timer } = require('./logger')
-const { paths, jsOptions } = require('./config')
+const { paths, js } = require('./config')
 const fs = require('fs-extra')
 const esbuild = require('esbuild')
 const sveltePlugin = require('esbuild-svelte')
@@ -41,7 +41,7 @@ class JSTask {
         target: ['es2020']
       })
       .catch((err) => {
-        if (jsOptions.verboseErrors) console.log(err)
+        if (js.verboseErrors) console.log(err)
       })
     files.forEach((file) => fileInfo(file))
     timer('Modules', Date.now() - start)
